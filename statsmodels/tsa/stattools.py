@@ -1235,11 +1235,11 @@ def grangercausalitytests(x, maxlag, addconst=True, verbose=True):
     return resli
 
 
-def coint(y0, y1, trend='c', method='aeg', maxlag=None, autolag='aic',
+def coint(y1, y2, trend='c', method='aeg', maxlag=None, autolag='aic',
           return_results=None):
     """Test for no-cointegration of a univariate equation
 
-    The null hypothesis is no cointegration. Variables in y0 and y1 are
+    The null hypothesis is no cointegration. Variables in y0 and y2 are
     assumed to be integrated of order 1, I(1).
 
     This uses the augmented Engle-Granger two-step cointegration test.
@@ -1327,26 +1327,26 @@ def coint(y0, y1, trend='c', method='aeg', maxlag=None, autolag='aic',
     trend = trend.lower()
     if trend not in ['c', 'nc', 'ct', 'ctt']:
         raise ValueError("trend option %s not understood" % trend)
-    y0 = np.asarray(y0)
     y1 = np.asarray(y1)
-    if y1.ndim < 2:
-        y1 = y1[:, None]
-    nobs, k_vars = y1.shape
-    k_vars += 1   # add 1 for y0
+    y2 = np.asarray(y2)
+    if y2.ndim < 2:
+        y2 = y2[:, None]
+    nobs, k_vars = y2.shape
+    k_vars += 1   # add 1 for y1
 
     if trend == 'nc':
-        xx = y1
+        xx = y2
     else:
-        xx = add_trend(y1, trend=trend, prepend=False)
+        xx = add_trend(y2, trend=trend, prepend=False)
 
-    res_co = OLS(y0, xx).fit()
+    res_co = OLS(y1, xx).fit()
 
     if res_co.rsquared < 1 - 100 * SQRTEPS:
         res_adf = adfuller(res_co.resid, maxlag=maxlag, autolag=autolag,
                            regression='nc')
     else:
         import warnings
-        warnings.warn("y0 and y1 are (almost) perfectly colinear."
+        warnings.warn("y1 and y2 are (almost) perfectly colinear."
                       "Cointegration test is not reliable in this case.",
                       CollinearityWarning)
         # Edge case where series are too similar
